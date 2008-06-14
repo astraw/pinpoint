@@ -1,11 +1,16 @@
+# The default rule is to build the documentation.
 default: docs
 
+# Search the current directory for *.txt, replace '.txt' with '.html'.
+HTML_products := $(patsubst %.txt,%.html,$(wildcard *.txt))
+
 clean:
-	rm GOALS.html
+	rm -f $(HTML_products)
 
-docs: GOALS.html
+docs: $(HTML_products)
 
-GOALS.html: GOALS.txt
-	rst2html GOALS.txt GOALS.html
+# This rule describes how to build .html files from .txt files.
+%.html : %.txt
+	rst2html $< $@
 
 .PHONY: docs default clean
