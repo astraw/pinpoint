@@ -1,2 +1,3 @@
 These data were collected by Andrew Straw on 2008-05-28 by waving an
-LED in the "mamarama" arena.
+LED in the "mamarama" arena. The radial distortion parameters were
+calculated from a separate dataset.
