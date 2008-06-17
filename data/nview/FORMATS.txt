@@ -1,0 +1,44 @@
+.. This document is in reStructuredText format.
+
+This document describes the data format in the pinpoint data/nview
+directory. These formats are compatible with the `Multi Camera Self
+Calibration Toolbox`_ by Svoboda et al.
+
+Each sub-directory contains a self-contained dataset from an
+individual camera setup. The file extension .dat indicates a file
+containing a single, ASCII text formatted 2 dimensional array.
+
+Files
+-----
+Res.dat : camera resolution (.dat file)
+    This file holds an Nx2 array with width and height of N cameras.
+IdMat.dat : point visibility (.dat file)
+    This file holds an NxM array of booleans describing the visibility
+    of M points in N cameras.
+points.dat : image coordinates (.dat file)
+    This file holds an (N*3)xM array containing the raw (distorted)
+    camera coordinates of M points.
+basename*.rad : radial distortion parameters
+    This file is valid as both a Python and MATLAB(R) script, and
+    contains radial distortion parameters compatible with the `Caltech
+    Camera Calibration Toolbox`_ and the `Multi Camera Self
+    Calibration Toolbox`_.
+camera_order.txt : ordered list of camera names
+    Contains a "common name" for each of N cameras. This file is
+    specific to the pinpoint toolbox.
+postion_guess.dat : estimates of camera positions
+    Contains (potentially very rough) estimates of camera
+    positions. This is used to find the homography between the output
+    of the calibration routines and the actual world coordinate system
+    in use. This file is specific to the pinpoint toolbox, but the
+    same data go in a file in
+    MultiCamSelfCal/MultiCamSelfCal/BlueCLocal/ in the `Multi Camera
+    Self Calibration Toolbox`_.
+description.txt : optional description of the origin of the data
+    This is a strictly optional text file describing the origin of the
+    data.
+		 
+MATLAB(R) is a registered trademark of The Mathworks, Inc.
+
+.. _Multi Camera Self Calibration Toolbox: http://cmp.felk.cvut.cz/%7Esvoboda/SelfCal/index.html
+.. _Caltech Camera Calibration Toolbox: http://www.vision.caltech.edu/bouguetj/calib_doc/

@@ -1,0 +1,2 @@
+These data were collected by Andrew Straw on 2008-05-28 by waving an
+LED in the "mamarama" arena.
