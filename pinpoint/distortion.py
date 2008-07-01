@@ -1,3 +1,4 @@
+"""models of non-linear camera distortion"""
 import numpy as np
 import scipy
 import scipy.ndimage
@@ -67,7 +68,7 @@ class CaltechNonlinearDistortionParameters(NonlinearDistortionParameters):
     p2 = Float(0.0, label="p2", desc="2nd tangential disortion term")
     alpha_c = Float(0.0, label="alpha_c", desc="pixel skew" )
 
-    traits_view = View(Group(Group(Item('cc1'),
+    simple_view = View(Group(Group(Item('cc1'),
                                    Item('cc2'),
                                    label='image center',
                                    show_border=True,
@@ -80,33 +81,32 @@ class CaltechNonlinearDistortionParameters(NonlinearDistortionParameters):
                        title   = 'Caltech Distortion Model - parameters',
                        )
 
-    all_view = View(Group(Group(Item('fc1'),
-                                Item('fc2'),
-                                label='focal length',
-                                show_border=True,
+    traits_view = View(Group(Group(Item('fc1'),
+                                   Item('fc2'),
+                                   label='focal length',
+                                   show_border=True,
+                                   ),
+                             Group(Item('cc1'),
+                                   Item('cc2'),
+                                   label='image center',
+                                   show_border=True,
+                                   ),
+                             Group(Item('k1'),
+                                   Item('k2'),
+                                   label='radial distortion coefficients',
+                                   show_border=True,
+                                   ),
+                             Group(Item('p1'),
+                                   Item('p2'),
+                                   label='tangential distortion coefficients',
+                                   show_border=True,
                                 ),
-                          Group(Item('cc1'),
-                                Item('cc2'),
-                                label='image center',
-                                show_border=True,
-                                ),
-                          Group(Item('k1'),
-                                Item('k2'),
-                                label='radial distortion coefficients',
-                                show_border=True,
-                                ),
-                          Group(Item('p1'),
-                                Item('p2'),
-                                label='tangential distortion coefficients',
-                                show_border=True,
-                                ),
-                          Group(Item('alpha_c'),
-                                #label='pixel skew coefficient',
-                                #show_border=True,
-                                )),
-                    title   = 'Caltech Distortion Model - parameters',
-                    )
-
+                             Group(Item('alpha_c'),
+                                   #label='pixel skew coefficient',
+                                   #show_border=True,
+                                   )),
+                       title   = 'Caltech Distortion Model - parameters',
+                       )
 
     def _anytrait_changed(self,event):
         self.helper = cd.CaltechDistortion( self.fc1, self.fc2,

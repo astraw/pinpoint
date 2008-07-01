@@ -1,3 +1,4 @@
+"""interactive GUI app for exploring non-linear distortion of images"""
 from threading import Thread
 from enthought.pyface.api import SplitApplicationWindow, GUI
 from enthought.traits.api import HasTraits, Float, Instance, String
@@ -26,16 +27,14 @@ class NonlinearDistortionControlPanel(HasTraits):
     traits_view = View(Group(Item('filename'),
                              Item('params')))
 
-    def __init__(self,*args,**kw):
-        super(NonlinearDistortionControlPanel,self).__init__(*args,**kw)
-        self.params.on_trait_change(self._show_undistorted_image)
-
     def _filename_fired(self, event ):
         self.image_data = scipy.misc.pilutil.imread(self.filename)
         h,w = self.image_data.shape[:2]
         cc1 = w/2.0
         cc2 = h/2.0
+        # every time a new image file is loaded, the parameters are reset
         self.params = CaltechNonlinearDistortionParameters(cc1=cc1,cc2=cc2)
+        self.params.on_trait_change(self._show_undistorted_image)
         self._show_undistorted_image()
 
     def _show_undistorted_image(self):
@@ -43,7 +42,7 @@ class NonlinearDistortionControlPanel(HasTraits):
             return
         try:
             if self.processing_job.isAlive():
-                self.display("Processing too slow")
+                # previous call still running too slow
                 return
         except AttributeError:
             pass
