@@ -1,4 +1,6 @@
 #emacs, this is -*-Python-*- mode
+def make_CaltechDistortion(*args,**kw):
+    return CaltechDistortion(*args,**kw)
 
 cdef class CaltechDistortion:
     cdef readonly double fc1, fc2, cc1, cc2
@@ -6,9 +8,9 @@ cdef class CaltechDistortion:
     cdef readonly double alpha_c
 
     def __init__(self, fc1, fc2, cc1, cc2, k1, k2, p1, p2, alpha_c=0 ):
-        """create instance of ReconstructHelper
+        """create instance of CaltechDistortion
 
-        ReconstructHelper(fc1, fc2, cc1, cc2, k1, k2, p1, p2 )
+        CaltechDistortion(fc1, fc2, cc1, cc2, k1, k2, p1, p2 )
         where:
         fc - focal length
         cc - camera center
@@ -27,10 +29,10 @@ cdef class CaltechDistortion:
         self.alpha_c = alpha_c
 
     def __reduce__(self):
-        """this allows ReconstructHelper to be pickled"""
+        """this allows CaltechDistortion to be pickled"""
         args = (self.fc1, self.fc2, self.cc1, self.cc2,
                 self.k1, self.k2, self.p1, self.p2, self.alpha_c)
-        return (make_ReconstructHelper, args)
+        return (make_CaltechDistortion, args)
 
     def undistort(self, double x_kk, double y_kk):
         """undistort 2D coordinate pair
