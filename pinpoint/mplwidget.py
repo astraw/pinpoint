@@ -1,3 +1,7 @@
+"""use matplotlib within a pyface application
+
+This module comes from Gaël Varoquaux's 'Traits Tutorial'.
+"""
 
 import wx
 
@@ -59,13 +63,13 @@ if __name__ == "__main__":
     # Create a window to demo the widget
     from enthought.pyface.api import ApplicationWindow, GUI
 
-    class MainWindow(ApplicationWindow): 
+    class MainWindow(ApplicationWindow):
         figure = Instance(MPLWidget)
         def _create_contents(self, parent):
             self.figure = MPLWidget(parent)
             return self.figure.control
 
-    window = MainWindow() 
+    window = MainWindow()
     from pylab import arange, sin
     x = arange(1, 10, 0.1)
     window.open()
