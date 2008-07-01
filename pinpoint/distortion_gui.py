@@ -1,7 +1,7 @@
 """interactive GUI app for exploring non-linear distortion of images"""
 from threading import Thread
 from enthought.pyface.api import SplitApplicationWindow, GUI
-from enthought.traits.api import HasTraits, Float, Instance, String
+from enthought.traits.api import HasTraits, Float, Instance, String, File
 from enthought.traits.ui.api import View, Item, Group
 from mplwidget import MPLWidget
 import scipy
@@ -23,7 +23,7 @@ class DistortionThread(Thread):
 class NonlinearDistortionControlPanel(HasTraits):
     params = Instance(NonlinearDistortionParameters)
     mplwidget = Instance(MPLWidget)
-    filename = String()
+    filename = File
     traits_view = View(Group(Item('filename'),
                              Item('params')))
 
@@ -59,7 +59,7 @@ class MainWindow(SplitApplicationWindow):
     mplwidget = Instance(MPLWidget)
     panel = Instance(NonlinearDistortionControlPanel)
     ratio = Float(0.7)
-    filename = String()
+    filename = File
     title = 'pinpoint - camera distortion GUI'
 
     def _create_lhs(self, parent):
@@ -75,10 +75,13 @@ class MainWindow(SplitApplicationWindow):
         self.close()
 
 if __name__ == '__main__':
-    filename = sys.argv[1]
+    if len(sys.argv) == 2:
+        kwargs = dict(filename = sys.argv[1])
+    else:
+        kwargs = {}
 
     gui = GUI()
-    window = MainWindow(filename=filename)
+    window = MainWindow(**kwargs)
     window.size = (700, 400)
     window.open()
 

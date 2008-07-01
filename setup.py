@@ -4,8 +4,8 @@ from Cython.Distutils import build_ext
 
 ext_modules = []
 
-ext_modules.append(Extension(name='pinpoint.caltech_distortion',
-                             sources=['src/caltech_distortion.pyx']))
+ext_modules.append(Extension(name='pinpoint._caltech_distortion',
+                             sources=['src/_caltech_distortion.pyx']))
 
 setup(name='pinpoint',
       version='0.0.1',

@@ -1,6 +1,7 @@
+# -*- coding: latin-1 -*-
 """use matplotlib within a pyface application
 
-This module comes from GaÃ«l Varoquaux's 'Traits Tutorial'.
+This module comes from Gaël Varoquaux's 'Traits Tutorial'.
 """
 
 import wx
