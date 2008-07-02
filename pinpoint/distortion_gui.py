@@ -10,6 +10,7 @@ from enthought.pyface.api import Widget
 from enthought.pyface.expandable_panel import ExpandablePanel
 
 from mplwidget import MPLWidget
+import matplotlib.cm as cm
 
 import numpy as np
 import scipy
@@ -93,7 +94,8 @@ class DisplayWorkThread(Thread):
         ax.imshow(im,
                   origin='lower',
                   extent=(ll[0],ur[0],ll[1],ur[1]),
-                  aspect='equal')
+                  aspect='equal',
+                  cmap=cm.pink )
         if hasattr(self,'lines'):
             for line in self.lines:
                 if not len(line):
