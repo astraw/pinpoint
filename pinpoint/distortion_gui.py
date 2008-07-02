@@ -34,15 +34,39 @@ class RightSidePanel(HasTraits):
                               ),
                         )
 
-class DistortionWorkThread(Thread):
+class DisplayWorkThread(Thread):
     def run(self):
-        im,ll,ur = self.nonlinear_distortion_parameters.remove_distortion(self.image_data)
+        if ((not hasattr(self,'nonlinear_distortion_parameters')) or
+            (self.nonlinear_distortion_parameters is None)):
+            do_undistortion = False
+        else:
+            do_undistortion = True
 
-        self.mplwidget.axes.images=[]
-        self.mplwidget.axes.imshow(im,
-                                   origin='lower',
-                                   extent=(ll[0],ur[0],ll[1],ur[1]),
-                                   aspect='equal')
+        if do_undistortion:
+            im,ll,ur = self.nonlinear_distortion_parameters.remove_distortion(self.image_data)
+        else:
+            im = self.image_data
+            ll = 0,0
+            ur = im.shape[:2][::-1]-np.array([1,1])
+
+        ax = self.mplwidget.axes
+        ax.images=[]
+        ax.lines=[]
+        ax.imshow(im,
+                  origin='lower',
+                  extent=(ll[0],ur[0],ll[1],ur[1]),
+                  aspect='equal')
+        if hasattr(self,'lines'):
+            for line in self.lines:
+                if not len(line):
+                    # empty line
+                    continue
+                line = np.array(line)
+                x = line[:,0]
+                y = line[:,1]
+                if do_undistortion:
+                    x,y = self.nonlinear_distortion_parameters.undistort(x,y)
+                ax.plot(x,y,'x-')
         GUI.invoke_later(self.mplwidget.figure.canvas.draw)
 
 class DistortedImageWidget(Widget):
@@ -50,9 +74,12 @@ class DistortedImageWidget(Widget):
     param_holder = Instance(RightSidePanel)
     list_of_lines = traits.Trait([],list)
 
-    mplwidget = Instance(MPLWidget)
+    distorted_mplwidget   = Instance(MPLWidget) # original image
+    undistorted_mplwidget = Instance(MPLWidget) # the undistorted version
+
     distorted_image = Array
-    processing_job = Instance(DistortionWorkThread)
+    distortion_display_thread   = Instance(DisplayWorkThread)
+    undistortion_display_thread = Instance(DisplayWorkThread)
     current_line = traits.Trait([],list)
 
     def __init__(self, parent, distorted_image, nonlinear_distortion_parameters, **kwargs):
@@ -62,6 +89,7 @@ class DistortedImageWidget(Widget):
         self.control = self._create_control(parent)
         self.nonlinear_distortion_parameters.on_trait_change(self._show_undistorted_image)
 
+        self._show_distorted_image()
         self._show_undistorted_image()
 
         self.current_line = [] # create new line
@@ -71,7 +99,25 @@ class DistortedImageWidget(Widget):
         """ Create the toolkit-specific control that represents the widget. """
         # The panel lets us add additional controls.
         self._panel = wx.Panel(parent, -1, style=wx.CLIP_CHILDREN)
-        self.mplwidget = MPLWidget(self._panel,on_key_press=self.on_mpl_key_press)
+        if 1:
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            self._panel.SetSizer(sizer)
+
+            distorted_panel = wx.Panel(self._panel, -1, style=wx.CLIP_CHILDREN)
+            sizer.Add( distorted_panel, 1, wx.EXPAND)
+
+            undistorted_panel = wx.Panel(self._panel, -1, style=wx.CLIP_CHILDREN)
+            sizer.Add( undistorted_panel, 1, wx.EXPAND)
+            sizer.Layout()
+
+            self.distorted_mplwidget = MPLWidget(distorted_panel,on_key_press=self.on_mpl_key_press)
+            self.distorted_mplwidget.axes.set_title('original, distorted image')
+
+            self.undistorted_mplwidget = MPLWidget(undistorted_panel)
+            self.undistorted_mplwidget.axes.set_title('undistorted image')
+        else:
+            # only 1 mpl widget - the undistorted image
+            self.undistorted_mplwidget = MPLWidget(self._panel,on_key_press=self.on_mpl_key_press)
         return self._panel
 
     def _list_of_lines_changed(self):
@@ -103,28 +149,45 @@ class DistortedImageWidget(Widget):
 
             ax = event.inaxes  # the axes instance
 
-            # undistorted coordinates
-            ux, uy = event.xdata,event.ydata
+            ## # undistorted coordinates
+            ## ux, uy = event.xdata,event.ydata
 
-            # distorted coordinates
-            print 'ux, uy',ux, uy
-            dx,dy = self.nonlinear_distortion_parameters.distort(ux,uy)
+            ## # distorted coordinates
+            ## print 'ux, uy',ux, uy
+            ## dx,dy = self.nonlinear_distortion_parameters.distort(ux,uy)
+            dx, dy = event.xdata,event.ydata
             print 'dx, dy',dx, dy
             self.current_line.append( (dx,dy) )
 
+            # get entire current line (fixme: plot all lines, not just current)
             tmp = np.array( self.current_line )
             x = tmp[:,0]
             y = tmp[:,1]
 
-            ux,uy = self.nonlinear_distortion_parameters.undistort(x,y)
+            #ux,uy = self.nonlinear_distortion_parameters.undistort(x,y)
 
             # XXX TODO fixme: remove old line(s) that may already be plotted
             xlim = ax.get_xlim().copy()
             ylim = ax.get_ylim().copy()
-            ax.plot(ux,uy,'bx-')
+            ax.plot(x,y,'bx-')
             ax.set_xlim(xlim)
             ax.set_ylim(ylim)
-            self.mplwidget.figure.canvas.draw()
+            self.distorted_mplwidget.figure.canvas.draw()
+
+            if 1:
+                # draw undistorted version
+                ux,uy = self.nonlinear_distortion_parameters.undistort(x,y)
+                print 'ux',ux
+                print 'uy',uy
+
+                ax = self.undistorted_mplwidget.axes
+                xlim = ax.get_xlim().copy()
+                ylim = ax.get_ylim().copy()
+                ax.plot(ux,uy,'bx-')
+                ax.set_xlim(xlim)
+                ax.set_ylim(ylim)
+                self.undistorted_mplwidget.figure.canvas.draw()
+
         elif event.key=='n':
             self.current_line = [] # create a new one
             self.list_of_lines.append( self.current_line ) # keep it
@@ -135,19 +198,30 @@ class DistortedImageWidget(Widget):
         self._list_of_lines_changed()
 
     def _show_undistorted_image(self):
-        if self.nonlinear_distortion_parameters is None:
-            return
         try:
-            if self.processing_job.isAlive():
-                # previous call still running too slow
+            if self.undistortion_display_thread.isAlive():
+                # previous call still running. too slow.
                 return
         except AttributeError:
             pass
-        self.processing_job = DistortionWorkThread()
-        self.processing_job.mplwidget = self.mplwidget
-        self.processing_job.nonlinear_distortion_parameters = self.nonlinear_distortion_parameters
-        self.processing_job.image_data = self.distorted_image
-        self.processing_job.start()
+        self.undistortion_display_thread = DisplayWorkThread()
+        self.undistortion_display_thread.lines = self.list_of_lines
+        self.undistortion_display_thread.mplwidget = self.undistorted_mplwidget
+        self.undistortion_display_thread.nonlinear_distortion_parameters = self.nonlinear_distortion_parameters
+        self.undistortion_display_thread.image_data = self.distorted_image
+        self.undistortion_display_thread.start()
+
+    def _show_distorted_image(self):
+        try:
+            if self.distortion_display_thread.isAlive():
+                # previous call still running. too slow.
+                return
+        except AttributeError:
+            pass
+        self.distortion_display_thread = DisplayWorkThread()
+        self.distortion_display_thread.mplwidget = self.distorted_mplwidget
+        self.distortion_display_thread.image_data = self.distorted_image
+        self.distortion_display_thread.start()
 
 FIX1 = False
 

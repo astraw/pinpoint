@@ -32,9 +32,12 @@ class NonlinearDistortionParameters(HasTraits):
 
         oshape = np.array(img.shape)
         if reshape:
-            lowerleft_corner = np.array(self.distort(0.,0.))
-            upperright_corner = np.array(self.distort(width-1,height-1))
+            lowerleft_corner = np.array(self.undistort(0.,0.))
+            upperright_corner = np.array(self.undistort(width-1,height-1))
             oshape[:2][::-1] = upperright_corner - lowerleft_corner
+        else:
+            lowerleft_corner = np.array((0.,0.))
+            upperright_corner = np.array((width-1.,height-1.))
 
         y,x = np.mgrid[0:oshape[0],0:oshape[1]]
 
@@ -44,7 +47,7 @@ class NonlinearDistortionParameters(HasTraits):
             y += lowerleft_corner[1]
 
         # Calculate reverse coordinates
-        x,y = self.undistort(x,y)
+        x,y = self.distort(x,y)
 
         coords = np.empty(np.r_[3,oshape],dtype=float)
 
