@@ -148,42 +148,42 @@ class DistortedImageWidget(Widget):
             # whichever distortion model we choose.
 
             ax = event.inaxes  # the axes instance
-
-            ## # undistorted coordinates
-            ## ux, uy = event.xdata,event.ydata
-
             ## # distorted coordinates
-            ## print 'ux, uy',ux, uy
-            ## dx,dy = self.nonlinear_distortion_parameters.distort(ux,uy)
             dx, dy = event.xdata,event.ydata
             print 'dx, dy',dx, dy
             self.current_line.append( (dx,dy) )
 
-            # get entire current line (fixme: plot all lines, not just current)
-            tmp = np.array( self.current_line )
-            x = tmp[:,0]
-            y = tmp[:,1]
-
-            #ux,uy = self.nonlinear_distortion_parameters.undistort(x,y)
-
-            # XXX TODO fixme: remove old line(s) that may already be plotted
             xlim = ax.get_xlim().copy()
             ylim = ax.get_ylim().copy()
-            ax.plot(x,y,'bx-')
+            ax.lines=[] # remove old line(s) that may already be plotted
+
+            # plot all lines
+            for line in self.list_of_lines:
+                if not len(line):
+                    continue
+                tmp = np.array( self.current_line )
+                x = tmp[:,0]
+                y = tmp[:,1]
+                ax.plot(x,y,'bx-')
             ax.set_xlim(xlim)
             ax.set_ylim(ylim)
             self.distorted_mplwidget.figure.canvas.draw()
 
             if 1:
                 # draw undistorted version
-                ux,uy = self.nonlinear_distortion_parameters.undistort(x,y)
-                print 'ux',ux
-                print 'uy',uy
-
                 ax = self.undistorted_mplwidget.axes
+                ax.lines=[] # remove old line(s) that may already be plotted
+
                 xlim = ax.get_xlim().copy()
                 ylim = ax.get_ylim().copy()
-                ax.plot(ux,uy,'bx-')
+                for line in self.list_of_lines:
+                    if not len(line):
+                        continue
+                    tmp = np.array( self.current_line )
+                    x = tmp[:,0]
+                    y = tmp[:,1]
+                    ux,uy = self.nonlinear_distortion_parameters.undistort(x,y)
+                    ax.plot(ux,uy,'bx-')
                 ax.set_xlim(xlim)
                 ax.set_ylim(ylim)
                 self.undistorted_mplwidget.figure.canvas.draw()
