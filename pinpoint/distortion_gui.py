@@ -16,17 +16,54 @@ import scipy
 import sys
 import wx
 
-from distortion import NonlinearDistortionParameters, CaltechNonlinearDistortionParameters
+from distortion import NonlinearDistortionModel, CaltechNonlinearDistortionModel
+import distortion_estimate
 
 class RightSidePanel(HasTraits):
     # right or bottom panel depending on direction of split
     add_image_file = Button()#
     automatically_estimate_distortion = Button()
-    nonlinear_distortion_parameters = Instance(NonlinearDistortionParameters)
+    nonlinear_distortion_model = Instance(NonlinearDistortionModel)
+    distorted_image_widgets = traits.Trait([],list)
+
+    def _automatically_estimate_distortion_changed ( self ):
+        print 'estimating'
+        # gather lines
+        all_lines = []
+        heightwidth = None
+        for diw in self.distorted_image_widgets:
+            all_lines.extend( diw.list_of_lines )
+            if heightwidth is None:
+                heightwidth = diw.distorted_image.shape[:2]
+            else:
+                assert np.allclose( heightwidth, diw.distorted_image.shape[:2] )
+        all_lines = [ np.array( xys ) for xys in all_lines ] # numpify
+        h,w = heightwidth
+        obj = distortion_estimate.Objective(all_lines,
+                                            distortion_center_guess=(h/2.,w/2.), # fixme: give menu option
+                                            # fixme: allow non-unity aspect ratio (focal length x != focal length y)
+                                            )
+
+        p0 = obj.get_default_p0(self.nonlinear_distortion_model)
+        initial_err = obj.sumsq_err(p0)
+        print 'initial_err',initial_err
+        pfinal, cov_x, infodict, mesg, ier = scipy.optimize.minpack.leastsq(
+            obj.lm_err_func,
+            np.array(p0,copy=True), # workaround bug (scipy ticket 637)
+            #epsfcn=options.epsfcn,
+            #ftol=options.tol,
+            #xtol=options.tol,
+            maxfev=int(1e6),
+            full_output=True,
+            )
+        final_err=obj.sumsq_err( pfinal )
+        print 'final_err',final_err
+        model = obj.get_distortion_model_for_params(pfinal)
+        self.nonlinear_distortion_model = model
 
     traits_view = View( Group(Item(name='add_image_file',),
                               Item(name='automatically_estimate_distortion',),
-                              Item(name='nonlinear_distortion_parameters'),
+                              Item(name='nonlinear_distortion_model'),
                               label='control',
                               show_border=True,
                               show_labels=False,
@@ -36,14 +73,14 @@ class RightSidePanel(HasTraits):
 
 class DisplayWorkThread(Thread):
     def run(self):
-        if ((not hasattr(self,'nonlinear_distortion_parameters')) or
-            (self.nonlinear_distortion_parameters is None)):
+        if ((not hasattr(self,'nonlinear_distortion_model')) or
+            (self.nonlinear_distortion_model is None)):
             do_undistortion = False
         else:
             do_undistortion = True
 
         if do_undistortion:
-            im,ll,ur = self.nonlinear_distortion_parameters.remove_distortion(self.image_data)
+            im,ll,ur = self.nonlinear_distortion_model.remove_distortion(self.image_data)
         else:
             im = self.image_data
             ll = 0,0
@@ -65,12 +102,12 @@ class DisplayWorkThread(Thread):
                 x = line[:,0]
                 y = line[:,1]
                 if do_undistortion:
-                    x,y = self.nonlinear_distortion_parameters.undistort(x,y)
+                    x,y = self.nonlinear_distortion_model.undistort(x,y)
                 ax.plot(x,y,'x-')
         GUI.invoke_later(self.mplwidget.figure.canvas.draw)
 
 class DistortedImageWidget(Widget):
-    nonlinear_distortion_parameters = Instance(NonlinearDistortionParameters)
+    nonlinear_distortion_model = Instance(NonlinearDistortionModel)
     param_holder = Instance(RightSidePanel)
     list_of_lines = traits.Trait([],list)
 
@@ -82,12 +119,12 @@ class DistortedImageWidget(Widget):
     undistortion_display_thread = Instance(DisplayWorkThread)
     current_line = traits.Trait([],list)
 
-    def __init__(self, parent, distorted_image, nonlinear_distortion_parameters, **kwargs):
+    def __init__(self, parent, distorted_image, nonlinear_distortion_model, **kwargs):
         self.distorted_image = distorted_image
-        self.nonlinear_distortion_parameters = nonlinear_distortion_parameters
+        self.nonlinear_distortion_model = nonlinear_distortion_model
         super(DistortedImageWidget,self).__init__(**kwargs)
         self.control = self._create_control(parent)
-        self.nonlinear_distortion_parameters.on_trait_change(self._show_undistorted_image)
+        self.nonlinear_distortion_model.on_trait_change(self._show_undistorted_image)
 
         self._show_distorted_image()
         self._show_undistorted_image()
@@ -182,7 +219,7 @@ class DistortedImageWidget(Widget):
                     tmp = np.array( self.current_line )
                     x = tmp[:,0]
                     y = tmp[:,1]
-                    ux,uy = self.nonlinear_distortion_parameters.undistort(x,y)
+                    ux,uy = self.nonlinear_distortion_model.undistort(x,y)
                     ax.plot(ux,uy,'bx-')
                 ax.set_xlim(xlim)
                 ax.set_ylim(ylim)
@@ -207,7 +244,7 @@ class DistortedImageWidget(Widget):
         self.undistortion_display_thread = DisplayWorkThread()
         self.undistortion_display_thread.lines = self.list_of_lines
         self.undistortion_display_thread.mplwidget = self.undistorted_mplwidget
-        self.undistortion_display_thread.nonlinear_distortion_parameters = self.nonlinear_distortion_parameters
+        self.undistortion_display_thread.nonlinear_distortion_model = self.nonlinear_distortion_model
         self.undistortion_display_thread.image_data = self.distorted_image
         self.undistortion_display_thread.start()
 
@@ -235,23 +272,23 @@ class MainWindow(SplitApplicationWindow):
     rspanel = Instance(RightSidePanel)
     ratio = Float(1.0)
     title = 'pinpoint - camera distortion GUI'
-    dis = traits.Trait([],list)
+    #dis = traits.Trait([],list)
 
     direction = String('horizontal')
 
     def __init__(self,*args,**kwargs):
         super(MainWindow,self).__init__(*args,**kwargs)
-        self.dis = []
+        #self.dis = []
 
-    def on_add_filename(self, filename):
+    def add_filename(self, filename):
         image_data = scipy.misc.pilutil.imread(filename)
         h,w = image_data.shape[:2]
         cc1 = w/2.0
         cc2 = h/2.0
 
-        if self.rspanel.nonlinear_distortion_parameters is None:
+        if self.rspanel.nonlinear_distortion_model is None:
             # the first time an image is loaded, the parameters are initialized
-            self.rspanel.nonlinear_distortion_parameters = CaltechNonlinearDistortionParameters(cc1=cc1,cc2=cc2)
+            self.rspanel.nonlinear_distortion_model = CaltechNonlinearDistortionModel(cc1=cc1,cc2=cc2)
 
         parent = self._expandable.control
         if FIX1:
@@ -262,9 +299,9 @@ class MainWindow(SplitApplicationWindow):
             parent = panel
         di = DistortedImageWidget(parent,
                                   distorted_image=image_data,
-                                  nonlinear_distortion_parameters=self.rspanel.nonlinear_distortion_parameters,
+                                  nonlinear_distortion_model=self.rspanel.nonlinear_distortion_model,
                                   )
-        self.dis.append( di )
+        self.rspanel.distorted_image_widgets.append( di )
         if FIX1:
             pass
         else:
@@ -301,6 +338,6 @@ if __name__ == '__main__':
     if 1:
         filenames = sys.argv[1:]
         for filename in filenames:
-            window.on_add_filename( filename )
+            window.add_filename( filename )
 
     gui.start_event_loop()

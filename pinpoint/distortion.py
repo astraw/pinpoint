@@ -3,7 +3,6 @@ import numpy as np
 import scipy
 import scipy.ndimage
 
-from enthought.pyface.api import SplitApplicationWindow, GUI
 from enthought.traits.api import HasTraits, Float, Instance, String, File, Enum
 
 from enthought.traits.ui.api import View, Item, Group, Handler
@@ -12,7 +11,7 @@ from enthought.traits.ui.menu import Action
 import pinpoint._caltech_distortion as _cd
 import pinpoint.util as util
 
-class NonlinearDistortionParameters(HasTraits):
+class NonlinearDistortionModel(HasTraits):
     def distort(self, x, y):
         raise NotImplementedError('this is an abstract base class method - please override')
 
@@ -77,7 +76,7 @@ class CaltechNonlinearDistortionHandler(Handler):
         creator = info.object
         raise NotImplementedError('')
 
-class CaltechNonlinearDistortionParameters(NonlinearDistortionParameters):
+class CaltechNonlinearDistortionModel(NonlinearDistortionModel):
     fc1 = Float(1000.0, label="fc1", desc="focal length (x)")
     fc2 = Float(1000.0, label="fc2", desc="focal length (y)")
     cc1 = Float(label="cc1", desc="distortion center (x)")
@@ -206,4 +205,4 @@ def read_rad_file(filename):
                   p2= params['kc4'],
                   alpha_c=(params['K12']/params['K11']),
                   )
-    return CaltechNonlinearDistortionParameters(**kwargs)
+    return CaltechNonlinearDistortionModel(**kwargs)
