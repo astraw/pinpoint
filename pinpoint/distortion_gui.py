@@ -84,7 +84,7 @@ class MainWindow(SplitApplicationWindow):
     #_expandable = Instance(wx.Panel) # FIX1 = True
 
     rspanel = Instance(RightSidePanel)
-    ratio = Float(0.8)
+    ratio = Float(1.0)
     title = 'pinpoint - camera distortion GUI'
     dis = traits.List
 
