@@ -34,11 +34,13 @@ class MPLWidget(Widget):
     _sizer = Any
     _toolbar = Any
 
-    def __init__(self, parent, **traits):
+    def __init__(self, parent, on_key_press=None, **traits):
         """ Creates a new matplotlib widget. """
         # Calls the init function of the parent class.
         super(MPLWidget, self).__init__(**traits)
         self.control = self._create_control(parent)
+        if on_key_press is not None:
+            self.figure.canvas.mpl_connect('key_press_event', on_key_press)
 
     def _create_control(self, parent):
         """ Create the toolkit-specific control that represents the widget. """

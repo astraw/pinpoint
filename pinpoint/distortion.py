@@ -99,6 +99,7 @@ class CaltechNonlinearDistortionParameters(NonlinearDistortionParameters):
                                    show_border=True,
                                    )),
                        title   = 'Caltech Distortion Model - parameters',
+                       resizable = True,
                        )
 
     traits_view = View(Group(Group(Item('fc1'),
@@ -128,6 +129,8 @@ class CaltechNonlinearDistortionParameters(NonlinearDistortionParameters):
                        buttons=[SaveRadFileAction],
                        handler=CaltechNonlinearDistortionHandler(),
                        title   = 'Caltech Distortion Model - parameters',
+                       #label = 'Edit distortion parameters',
+                       resizable = True,
                        )
 
     def _anytrait_changed(self,event):
