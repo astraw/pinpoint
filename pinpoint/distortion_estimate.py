@@ -132,8 +132,6 @@ class Objective(object):
             return d
 
         p0 = np.ones((2,))
-        print 'residuals, p0',residuals, p0
-        print 'xys',xys
         pfinal, ier = scipy.optimize.leastsq( residuals, p0,
                                               args=( xys, ),
                                               )

@@ -21,7 +21,7 @@ import distortion_estimate
 
 class RightSidePanel(HasTraits):
     # right or bottom panel depending on direction of split
-    add_image_file = Button()#
+    #add_image_file = Button() # fixme: implement
     automatically_estimate_distortion = Button()
     nonlinear_distortion_model = Instance(NonlinearDistortionModel)
     distorted_image_widgets = traits.Trait([],list)
@@ -37,16 +37,17 @@ class RightSidePanel(HasTraits):
                 heightwidth = diw.distorted_image.shape[:2]
             else:
                 assert np.allclose( heightwidth, diw.distorted_image.shape[:2] )
-        all_lines = [ np.array( xys ) for xys in all_lines ] # numpify
+        all_lines = [ np.array( xys ) for xys in all_lines if len(xys) ] # numpify
         h,w = heightwidth
         obj = distortion_estimate.Objective(all_lines,
-                                            distortion_center_guess=(h/2.,w/2.), # fixme: give menu option
+                                            distortion_center_guess=(w/2.,h/2.), # fixme: give menu option
                                             # fixme: allow non-unity aspect ratio (focal length x != focal length y)
                                             )
 
         p0 = obj.get_default_p0(self.nonlinear_distortion_model)
         initial_err = obj.sumsq_err(p0)
         print 'initial_err',initial_err
+        print 'estimating... please wait'
         pfinal, cov_x, infodict, mesg, ier = scipy.optimize.minpack.leastsq(
             obj.lm_err_func,
             np.array(p0,copy=True), # workaround bug (scipy ticket 637)
@@ -61,7 +62,7 @@ class RightSidePanel(HasTraits):
         model = obj.get_distortion_model_for_params(pfinal)
         self.nonlinear_distortion_model = model
 
-    traits_view = View( Group(Item(name='add_image_file',),
+    traits_view = View( Group(#Item(name='add_image_file',),
                               Item(name='automatically_estimate_distortion',),
                               Item(name='nonlinear_distortion_model'),
                               label='control',
@@ -177,19 +178,9 @@ class DistortedImageWidget(Widget):
         print
 
 
-    def on_mpl_key_press(self,event):
-        if event.key=='p':
-            # The plot is in undistorted coordinates given the current
-            # distortion model. But we need to save the distorted
-            # coordinates so that we can undistort according to
-            # whichever distortion model we choose.
-
-            ax = event.inaxes  # the axes instance
-            ## # distorted coordinates
-            dx, dy = event.xdata,event.ydata
-            print 'dx, dy',dx, dy
-            self.current_line.append( (dx,dy) )
-
+    def _update_lines(self):
+        ax = self.distorted_mplwidget.axes
+        if 1:
             xlim = ax.get_xlim().copy()
             ylim = ax.get_ylim().copy()
             ax.lines=[] # remove old line(s) that may already be plotted
@@ -198,7 +189,7 @@ class DistortedImageWidget(Widget):
             for line in self.list_of_lines:
                 if not len(line):
                     continue
-                tmp = np.array( self.current_line )
+                tmp = np.array( line )
                 x = tmp[:,0]
                 y = tmp[:,1]
                 ax.plot(x,y,'bx-')
@@ -216,7 +207,7 @@ class DistortedImageWidget(Widget):
                 for line in self.list_of_lines:
                     if not len(line):
                         continue
-                    tmp = np.array( self.current_line )
+                    tmp = np.array( line )
                     x = tmp[:,0]
                     y = tmp[:,1]
                     ux,uy = self.nonlinear_distortion_model.undistort(x,y)
@@ -225,13 +216,35 @@ class DistortedImageWidget(Widget):
                 ax.set_ylim(ylim)
                 self.undistorted_mplwidget.figure.canvas.draw()
 
+    def on_mpl_key_press(self,event):
+        if event.key=='p':
+            # The plot is in undistorted coordinates given the current
+            # distortion model. But we need to save the distorted
+            # coordinates so that we can undistort according to
+            # whichever distortion model we choose.
+
+            ax = event.inaxes  # the axes instance
+            ## # distorted coordinates
+            dx, dy = event.xdata,event.ydata
+            print 'dx, dy',dx, dy
+            self.current_line.append( (dx,dy) )
+            self._update_lines()
+
         elif event.key=='n':
+            # new line
             self.current_line = [] # create a new one
             self.list_of_lines.append( self.current_line ) # keep it
+            self._update_lines()
+
         elif event.key=='c':
-            # clear all
+            # clear all lines
             del self.list_of_lines[:]
             del self.current_line[:]
+
+            self.current_line = [] # create a new one
+            self.list_of_lines.append( self.current_line ) # keep it
+            self._update_lines()
+
         self._list_of_lines_changed()
 
     def _show_undistorted_image(self):
