@@ -22,10 +22,13 @@ import distortion_estimate
 
 class RightSidePanel(HasTraits):
     # right or bottom panel depending on direction of split
-    #add_image_file = Button() # fixme: implement
+#    add_image_file = Button()
     automatically_estimate_distortion = Button()
     nonlinear_distortion_model = Instance(NonlinearDistortionModel)
     distorted_image_widgets = traits.Trait([],list)
+
+    ## def _add_image_file_changed ( self ):
+    ##     # need to figure out how to open a dialog with traits to ask for filename
 
     def _automatically_estimate_distortion_changed ( self ):
         print 'estimating'
@@ -309,6 +312,9 @@ class MainWindow(SplitApplicationWindow):
         if FIX1:
             parent_sizer = parent.GetSizer()
             panel = wx.Panel(parent, -1, style=wx.CLIP_CHILDREN)
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            panel.SetSizer(sizer)
+            panel.SetBackgroundColour((255,0,0)) # set bg color as debug tool
             parent_sizer.Add(panel, 1, wx.EXPAND)
             parent_sizer.Layout()
             parent = panel
@@ -324,12 +330,12 @@ class MainWindow(SplitApplicationWindow):
             #self._expandable.show_layer(filename) # this is mentioned in expandable_panel.py source, but doesn't exist
 
     def _create_lhs(self, parent):
-
         if FIX1:
             self._expandable = panel = wx.Panel(parent, -1, style=wx.CLIP_CHILDREN)
             self._expandable.control = panel
             sizer = wx.BoxSizer(wx.VERTICAL)
             panel.SetSizer(sizer)
+            panel.SetBackgroundColour((0,255,0))  # set bg color as debug tool
         else:
             self._expandable = ExpandablePanel(parent)
 
@@ -354,5 +360,14 @@ if __name__ == '__main__':
         filenames = sys.argv[1:]
         for filename in filenames:
             window.add_filename( filename )
+        if not len(filenames):
+            print >> sys.stderr, """Error - No filenames specified'
+
+Usage:
+
+  python distortion_gui.py FILE [FILE] ...
+
+where each FILE is an image from the same lens and camera"""
+            sys.exit(1)
 
     gui.start_event_loop()
