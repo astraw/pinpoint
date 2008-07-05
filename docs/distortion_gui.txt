@@ -1,0 +1,50 @@
+.. This document is in reStructuredText format.
+
+A distortion-estimation GUI.
+
+The program is run from the command line after installing the pinpoint
+package by running "python distortion_gui.py filename.jpg".
+
+Implemented Features
+--------------------
+
+ * Simultaneously view multiple images sharing the same distortion model
+
+ * Manually adjust distortion model and watch live updates of
+   undistorted image
+
+ * Automatically estimate distortion using manually entered straight
+   lines. (Uses the algorithm of 'Line-Based Correction of Radial Lens
+   Distortion' (GMIP 1997) by Prescott and McLean)
+
+Planned and wished-for features
+--------------------------------
+
+ * Unit tests of distortion (forward and reverse) functionality.
+
+ * Automatically detected checkerboard corners so that distortion
+   estimation is fully automated.
+
+ * Distortion visualization
+
+ * An "add image" button - currently this must be done through the
+   command line at program invocation.
+
+ * Alternative distortion models
+
+ * A view of the lines that have been manually or automatically
+   entered on the image so that individual lines or vertices can be
+   removed or added. (Currently, there are a couple hotkeys in the
+   image canvas for implementing this.)
+
+Known Bugs
+----------
+
+ * Images are shown in an expandable panel which is initially
+   collapsed. To un-collapse the panel, click along the top few pixels
+   of the main screen portion.
+
+Thanks to Stéfan for providing a demonstration of how to use
+scipy.ndimage.map_coordinates() for fast image warping. Also, this was
+my first endeavor using enthought.traits, which is a really powerful
+toolkit.
