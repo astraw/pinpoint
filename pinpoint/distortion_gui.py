@@ -348,8 +348,7 @@ class MainWindow(SplitApplicationWindow):
     def _on_close(self, event):
         self.close()
 
-if __name__ == '__main__':
-
+def main():
     gui = GUI()
     window = MainWindow()
 
@@ -371,3 +370,6 @@ where each FILE is an image from the same lens and camera"""
             sys.exit(1)
 
     gui.start_event_loop()
+
+if __name__ == '__main__':
+    main()
