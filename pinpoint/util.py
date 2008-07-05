@@ -1,5 +1,18 @@
 import numpy as np
 
+def open_file(name_or_obj,mode='rb'):
+    """return an open file object from a filename or open file object
+
+    If a new file object was opened, it the return variable close_file
+    will be True.
+    """
+    fd = name_or_obj
+    close_file = False
+    if isinstance(fd,basestring):
+        fd = open(fd,mode=mode)
+        close_file = True
+    return fd, close_file
+
 def load_dat_file(fd):
     """read a .dat file and return an array
 
@@ -13,10 +26,7 @@ def load_dat_file(fd):
     -------
     M : a numpy array
     """
-    close_file = False
-    if isinstance(fd,basestring):
-        fd = open(fd,mode='rb')
-        close_file = True
+    fd,close_file = open_file(fd,mode='rb')
     buf = fd.read()
     if close_file:
         fd.close()
@@ -51,11 +61,7 @@ def save_dat_file(M,fd,isint=False):
     if len(A.shape) == 1:
         A=np.reshape(A, (1,A.shape[0]) )
 
-    close_file = False
-    if isinstance(fd,basestring):
-        fd = open(fd,mode='wb')
-        close_file = True
-
+    fd,close_file = open_file(fd,mode='wb')
     for i in range(A.shape[0]):
         buf = ' '.join( map( fmt, A[i,:] ) )
         fd.write( buf )

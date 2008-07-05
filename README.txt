@@ -2,6 +2,12 @@
 
 TODO: Add a real README file.
 
+Requirements
+------------
+
+Build-Depends: cython
+Depends: numpy, scipy, enthought-traits-ui, matplotlib
+
 Related projects
 ----------------
 
@@ -11,7 +17,7 @@ Related projects
   was in interesting `discussion on the CREATE mailing list`_ about a
   database of lenses.
 
-.. _panotools: http://panotools.sourceforge.net/ 
+.. _panotools: http://panotools.sourceforge.net/
 .. _hugin: http://wiki.panotools.org/Hugin
 .. _Panotools lens correction model: http://wiki.panotools.org/Lens_correction_model
 .. _discussion on the CREATE mailing list: http://lists.freedesktop.org/archives/create/2007-May/000743.html
