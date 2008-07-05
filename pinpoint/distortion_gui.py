@@ -15,6 +15,7 @@ import matplotlib.cm as cm
 import numpy as np
 import scipy
 import sys
+from optparse import OptionParser
 import wx
 
 from distortion import NonlinearDistortionModel, CaltechNonlinearDistortionModel
@@ -349,25 +350,24 @@ class MainWindow(SplitApplicationWindow):
         self.close()
 
 def main():
+    usage = '%prog IMAGE_FILE [IMAGE_FILE] [...]'
+    parser = OptionParser(usage)
+    (options, args) = parser.parse_args()
+
+    if len(args)<1:
+        # Currently at least one IMAGE_FILE is required because the
+        # add_image button is broken.
+        parser.print_help()
+        return
+
     gui = GUI()
     window = MainWindow()
 
     window.size = (700, 400)
     window.open()
 
-    if 1:
-        filenames = sys.argv[1:]
-        for filename in filenames:
-            window.add_filename( filename )
-        if not len(filenames):
-            print >> sys.stderr, """Error - No filenames specified'
-
-Usage:
-
-  python distortion_gui.py FILE [FILE] ...
-
-where each FILE is an image from the same lens and camera"""
-            sys.exit(1)
+    for filename in args:
+        window.add_filename( filename )
 
     gui.start_event_loop()
 
