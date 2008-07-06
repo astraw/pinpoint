@@ -2,7 +2,8 @@
 from threading import Thread
 from enthought.pyface.api import SplitApplicationWindow, GUI
 
-from enthought.traits.api import HasTraits, Float, Instance, String, File, Button, Array
+from enthought.traits.api import HasTraits, Float, Instance, String, File, \
+     Button, Array
 import enthought.traits.api as traits
 from enthought.traits.ui.api import View, Item, Group, Spring
 
@@ -40,12 +41,15 @@ class RightSidePanel(HasTraits):
             if heightwidth is None:
                 heightwidth = diw.distorted_image.shape[:2]
             else:
-                assert np.allclose( heightwidth, diw.distorted_image.shape[:2] )
-        all_lines = [ np.array( xys ) for xys in all_lines if len(xys) ] # numpify
+                assert np.allclose(heightwidth, diw.distorted_image.shape[:2])
+        all_lines = [np.array(xys) for xys in all_lines if len(xys) ] # numpify
         h,w = heightwidth
         obj = distortion_estimate.Objective(all_lines,
-                                            distortion_center_guess=(w/2.,h/2.), # fixme: give menu option
-                                            # fixme: allow non-unity aspect ratio (focal length x != focal length y)
+                                            distortion_center_guess=(w/2.,h/2.),
+                                            # fixme: give menu option
+                                            # fixme: allow non-unity aspect
+                                            #        ratio (focal length x !=
+                                            #               focal length y)
                                             )
 
         p0 = obj.get_default_p0(self.nonlinear_distortion_model)
@@ -85,7 +89,8 @@ class DisplayWorkThread(Thread):
             do_undistortion = True
 
         if do_undistortion:
-            im,ll,ur = self.nonlinear_distortion_model.remove_distortion(self.image_data)
+            im,ll,ur = self.nonlinear_distortion_model.remove_distortion(
+                self.image_data)
         else:
             im = self.image_data
             ll = 0,0
@@ -125,12 +130,14 @@ class DistortedImageWidget(Widget):
     undistortion_display_thread = Instance(DisplayWorkThread)
     current_line = traits.Trait([],list)
 
-    def __init__(self, parent, distorted_image, nonlinear_distortion_model, **kwargs):
+    def __init__(self, parent, distorted_image,
+                 nonlinear_distortion_model, **kwargs):
         self.distorted_image = distorted_image
         self.nonlinear_distortion_model = nonlinear_distortion_model
         super(DistortedImageWidget,self).__init__(**kwargs)
         self.control = self._create_control(parent)
-        self.nonlinear_distortion_model.on_trait_change(self._show_undistorted_image)
+        self.nonlinear_distortion_model.on_trait_change(
+            self._show_undistorted_image)
 
         self._show_distorted_image()
         self._show_undistorted_image()
@@ -149,18 +156,21 @@ class DistortedImageWidget(Widget):
             distorted_panel = wx.Panel(self._panel, -1, style=wx.CLIP_CHILDREN)
             sizer.Add( distorted_panel, 1, wx.EXPAND)
 
-            undistorted_panel = wx.Panel(self._panel, -1, style=wx.CLIP_CHILDREN)
+            undistorted_panel = wx.Panel(self._panel, -1,
+                                         style=wx.CLIP_CHILDREN)
             sizer.Add( undistorted_panel, 1, wx.EXPAND)
             sizer.Layout()
 
-            self.distorted_mplwidget = MPLWidget(distorted_panel,on_key_press=self.on_mpl_key_press)
+            self.distorted_mplwidget = MPLWidget(distorted_panel,
+                                           on_key_press=self.on_mpl_key_press)
             self.distorted_mplwidget.axes.set_title('original, distorted image')
 
             self.undistorted_mplwidget = MPLWidget(undistorted_panel)
             self.undistorted_mplwidget.axes.set_title('undistorted image')
         else:
             # only 1 mpl widget - the undistorted image
-            self.undistorted_mplwidget = MPLWidget(self._panel,on_key_press=self.on_mpl_key_press)
+            self.undistorted_mplwidget = MPLWidget(self._panel,
+                                            on_key_press=self.on_mpl_key_press)
         return self._panel
 
     def _list_of_lines_changed(self):
@@ -262,7 +272,8 @@ class DistortedImageWidget(Widget):
         self.undistortion_display_thread = DisplayWorkThread()
         self.undistortion_display_thread.lines = self.list_of_lines
         self.undistortion_display_thread.mplwidget = self.undistorted_mplwidget
-        self.undistortion_display_thread.nonlinear_distortion_model = self.nonlinear_distortion_model
+        self.undistortion_display_thread.nonlinear_distortion_model = \
+                                         self.nonlinear_distortion_model
         self.undistortion_display_thread.image_data = self.distorted_image
         self.undistortion_display_thread.start()
 
@@ -306,7 +317,8 @@ class MainWindow(SplitApplicationWindow):
 
         if self.rspanel.nonlinear_distortion_model is None:
             # the first time an image is loaded, the parameters are initialized
-            self.rspanel.nonlinear_distortion_model = CaltechNonlinearDistortionModel(cc1=cc1,cc2=cc2)
+            self.rspanel.nonlinear_distortion_model = \
+                 CaltechNonlinearDistortionModel(cc1=cc1,cc2=cc2)
 
         parent = self._expandable.control
         if FIX1:
@@ -318,11 +330,12 @@ class MainWindow(SplitApplicationWindow):
             parent_sizer.Add(panel, 1, wx.EXPAND)
             parent_sizer.Layout()
             parent = panel
-        di = DistortedImageWidget(parent,
-                                  distorted_image=image_data,
-                                  nonlinear_distortion_model=self.rspanel.nonlinear_distortion_model,
-                                  )
-        self.rspanel.distorted_image_widgets.append( di )
+        di = DistortedImageWidget(
+            parent,
+            distorted_image=image_data,
+            nonlinear_distortion_model=self.rspanel.nonlinear_distortion_model,
+            )
+        self.rspanel.distorted_image_widgets.append(di)
         if FIX1:
             pass
         else:
@@ -331,7 +344,8 @@ class MainWindow(SplitApplicationWindow):
 
     def _create_lhs(self, parent):
         if FIX1:
-            self._expandable = panel = wx.Panel(parent, -1, style=wx.CLIP_CHILDREN)
+            self._expandable = panel = wx.Panel(parent, -1,
+                                                style=wx.CLIP_CHILDREN)
             self._expandable.control = panel
             sizer = wx.BoxSizer(wx.VERTICAL)
             panel.SetSizer(sizer)
@@ -343,7 +357,8 @@ class MainWindow(SplitApplicationWindow):
 
     def _create_rhs(self, parent):
         self.rspanel = RightSidePanel()
-        return self.rspanel.edit_traits(parent = parent, kind="subpanel").control
+        return self.rspanel.edit_traits(parent = parent,
+                                        kind="subpanel").control
 
     def _on_close(self, event):
         self.close()
