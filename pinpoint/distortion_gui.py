@@ -100,7 +100,6 @@ class DisplayWorkThread(Thread):
         ax.images=[]
         ax.lines=[]
         ax.imshow(im,
-                  origin='lower',
                   extent=(ll[0],ur[0],ll[1],ur[1]),
                   aspect='equal',
                   cmap=cm.pink )
