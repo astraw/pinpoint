@@ -100,27 +100,41 @@ class DisplayWorkThread(Thread):
         ax = self.mplwidget.axes
         ax.images=[]
         ax.lines=[]
-        ax.imshow(im,
-                  extent=(ll[0],ur[0],ll[1],ur[1]),
+        kwargs = {}
+
+        if self.display_transform == 'flip y':
+            display_im = im
+            kwargs['origin']='lower'
+            kwargs['extent']=(ll[0],ur[0],ll[1],ur[1])
+        elif self.display_transform == 'identity':
+            display_im = im
+            kwargs['extent']=(ll[0],ur[0],ur[1],ll[1])
+        elif self.display_transform == 'rotate 180':
+            display_im = np.rot90(np.rot90(im))
+            kwargs['extent']=(ur[0],ll[0],ll[1],ur[1])#(ll[0],ur[0],ur[1],ll[1])
+        elif self.display_transform == 'rotate 90':
+            display_im = np.rot90(im)
+            kwargs['extent']=(ll[1],ur[1],ll[0],ur[0])
+        elif self.display_transform == 'rotate 270':
+            display_im = np.rot90(np.rot90(np.rot90(im)))
+            kwargs['extent']=(ur[1],ll[1],ur[0],ll[0])
+        else:
+            raise ValueError("unknown transform '%s'"%self.display_transform)
+
+        ax.imshow(display_im,
                   aspect='equal',
-                  cmap=cm.pink )
-        if hasattr(self,'lines'):
-            for line in self.lines:
-                if not len(line):
-                    # empty line
-                    continue
-                line = np.array(line)
-                x = line[:,0]
-                y = line[:,1]
-                if do_undistortion:
-                    x,y = self.nonlinear_distortion_model.undistort(x,y)
-                ax.plot(x,y,'x-')
+                  cmap=cm.pink,
+                  **kwargs)
         GUI.invoke_later(self.mplwidget.figure.canvas.draw)
 
 class DistortedImageWidget(Widget):
     nonlinear_distortion_model = Instance(NonlinearDistortionModel)
     param_holder = Instance(RightSidePanel)
     list_of_lines = traits.Trait([],list)
+    # fixme: need to allow user to change the display_transform within
+    # the GUI.
+    display_transform = traits.Trait('identity','flip y','rotate 90',
+                                     'rotate 180', 'rotate 270')
 
     distorted_mplwidget   = Instance(MPLWidget) # original image
     undistorted_mplwidget = Instance(MPLWidget) # the undistorted version
@@ -207,6 +221,8 @@ class DistortedImageWidget(Widget):
                 tmp = np.array( line )
                 x = tmp[:,0]
                 y = tmp[:,1]
+                if self.display_transform in ['rotate 90','rotate 270']:
+                    x,y=y,x
                 ax.plot(x,y,'bx-')
             ax.set_xlim(xlim)
             ax.set_ylim(ylim)
@@ -226,6 +242,8 @@ class DistortedImageWidget(Widget):
                     x = tmp[:,0]
                     y = tmp[:,1]
                     ux,uy = self.nonlinear_distortion_model.undistort(x,y)
+                    if self.display_transform in ['rotate 90','rotate 270']:
+                        ux,uy=uy,ux
                     ax.plot(ux,uy,'bx-')
                 ax.set_xlim(xlim)
                 ax.set_ylim(ylim)
@@ -242,6 +260,9 @@ class DistortedImageWidget(Widget):
             ## # distorted coordinates
             dx, dy = event.xdata,event.ydata
             print 'dx, dy',dx, dy
+            if self.display_transform in ['rotate 90','rotate 270']:
+                # flip coordinate axes
+                dx,dy = dy, dx
             self.current_line.append( (dx,dy) )
             self._update_lines()
 
@@ -270,6 +291,7 @@ class DistortedImageWidget(Widget):
         except AttributeError:
             pass
         self.undistortion_display_thread = DisplayWorkThread()
+        self.undistortion_display_thread.display_transform = self.display_transform
         self.undistortion_display_thread.lines = self.list_of_lines
         self.undistortion_display_thread.mplwidget = self.undistorted_mplwidget
         self.undistortion_display_thread.nonlinear_distortion_model = \
@@ -285,6 +307,7 @@ class DistortedImageWidget(Widget):
         except AttributeError:
             pass
         self.distortion_display_thread = DisplayWorkThread()
+        self.distortion_display_thread.display_transform = self.display_transform
         self.distortion_display_thread.mplwidget = self.distorted_mplwidget
         self.distortion_display_thread.image_data = self.distorted_image
         self.distortion_display_thread.start()
