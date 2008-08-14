@@ -30,9 +30,10 @@ for this setup are:
 1. Quantitative characterization of radial distortion (and possibly
    other distortion) allowing imaging systems to be treated as a
    non-linear 2D image distortion stage and a pinhole camera
-   model. This is a relatively well-understood problem. Initially, we
-   will implement the `Line-Based Correction of Radial Lens
-   Distortion`_ (GMIP 1997) algorithm by Prescott and McLean.
+   model. This is a relatively well-understood problem. We have
+   implemented the `Line-Based Correction of Radial Lens Distortion`_
+   (GMIP 1997) algorithm by Prescott and McLean in the
+   pinpoint/distortion_estimate.py module.
 
 2. Factorization of (strongly) perspective-distorted images of 3D
    points in which some views of the points are occluded. This is the

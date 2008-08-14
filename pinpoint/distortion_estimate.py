@@ -98,10 +98,15 @@ class Objective(object):
         gives test on synthetic data regarding the performance of
         various algorithms.
 
-        Finally, 'A new algorithm to correct fish-eye and strong
-        wide-angle lens-distortion from single images' (2001) by
+        'A new algorithm to correct fish-eye and strong wide-angle
+        lens-distortion from single images' (2001) by
         Brauer-Burchardt, C.; Voss, K 10.1109/ICIP.2001.958994 gives
         an algorithm that seems very similar to Strand and Hayman.
+
+        'Calibration of Cameras with Radially Symmetric Distortion'
+        (2008) by Tardif, Sturm, Trudeau, and Roy
+        10.1109/TPAMI.2008.202 suggest more algorithms and may be
+        interesting to pursue.
 
         """
         distortion_model = self.get_distortion_model_for_params( params )
