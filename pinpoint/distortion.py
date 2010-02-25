@@ -149,12 +149,12 @@ class CaltechNonlinearDistortionModel(NonlinearDistortionModel):
 
     def distort(self, x, y):
         # TODO: use numpy arrays natively
-        vfunc = np.vectorize( self.helper.distort )
+        vfunc = np.vectorize( lambda xx,yy: self.helper.distort(xx,yy) )
         return vfunc(x,y)
 
     def undistort(self, x, y):
         # TODO: use numpy arrays natively
-        vfunc = np.vectorize( self.helper.undistort )
+        vfunc = np.vectorize( lambda xx,yy: self.helper.undistort(xx,yy) )
         return vfunc(x,y)
 
     def save_to_rad_file( self, fd, comments=None ):

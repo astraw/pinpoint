@@ -210,8 +210,8 @@ class DistortedImageWidget(Widget):
     def _update_lines(self):
         ax = self.distorted_mplwidget.axes
         if 1:
-            xlim = ax.get_xlim().copy()
-            ylim = ax.get_ylim().copy()
+            xlim = ax.get_xlim()
+            ylim = ax.get_ylim()
             ax.lines=[] # remove old line(s) that may already be plotted
 
             # plot all lines
@@ -233,8 +233,8 @@ class DistortedImageWidget(Widget):
                 ax = self.undistorted_mplwidget.axes
                 ax.lines=[] # remove old line(s) that may already be plotted
 
-                xlim = ax.get_xlim().copy()
-                ylim = ax.get_ylim().copy()
+                xlim = ax.get_xlim()
+                ylim = ax.get_ylim()
                 for line in self.list_of_lines:
                     if not len(line):
                         continue
