@@ -1,0 +1,139 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Goals of the pinpoint project &mdash; pinpoint v0.0.4+git documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.4+git',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pinpoint v0.0.4+git documentation" href="index.html" />
+    <link rel="next" title="pinpoint_distortion_gui program" href="pinpoint_distortion_gui.html" />
+    <link rel="prev" title="Pinpoint" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="pinpoint_distortion_gui.html" title="pinpoint_distortion_gui program"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="index.html" title="Pinpoint"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pinpoint v0.0.4+git documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="goals-of-the-pinpoint-project">
+<h1>Goals of the pinpoint project<a class="headerlink" href="#goals-of-the-pinpoint-project" title="Permalink to this headline">¶</a></h1>
+<p>This is a document stating the goals for the <a class="reference external" href="http://github.com/astraw/pinpoint">pinpoint project</a>. Currently, this document and
+the project are in a very early and unfinished form, and everything
+should be regarded as a pre-alpha sketch. Please join the fun if
+you&#8217;re so inclined.</p>
+<p>Ultimately, we would like pinpoint to be an open-source Python library
+suitable for multi-camera calibration used in 3D machine vision
+tasks. Multi-camera setups are now common, and we would like to allow
+the calibration of these to be as easy as possible. Although this is
+still an active area of academic research, there are a number of
+published algorithms which are useful to the practitioner. Some of
+these are already available as open source software, such as <a class="reference external" href="http://www.ics.forth.gr/~lourakis/sba/">sba</a>. We
+would like to bring together, under one unified API, everything
+necessary to perform multi-camera calibrations. Another inspiration is
+the <a class="reference external" href="http://cmp.felk.cvut.cz/%7Esvoboda/SelfCal/index.html">Multi Camera Self Calibration Toolbox</a> by Svoboda et al.</p>
+<p>One initial use case for the pinpoint project are the <a class="reference external" href="http://dickinson.caltech.edu/Research/MultiTrack">flydra</a> systems
+by Andrew Straw and Michael Dickinson at Caltech. The specific needs
+for this setup are:</p>
+<ol class="arabic simple">
+<li>Quantitative characterization of radial distortion (and possibly
+other distortion) allowing imaging systems to be treated as a
+non-linear 2D image distortion stage and a pinhole camera
+model. This is a relatively well-understood problem. We have
+implemented the <a class="reference external" href="http://dx.doi.org/10.1006/gmip.1996.0407">Line-Based Correction of Radial Lens Distortion</a>
+(GMIP 1997) algorithm by Prescott and McLean in the
+pinpoint/distortion_estimate.py module.</li>
+<li>Factorization of (strongly) perspective-distorted images of 3D
+points in which some views of the points are occluded. This is the
+domain of the <a class="reference external" href="http://citeseer.ist.psu.edu/sturm96factorization.html">Sturm &amp; Triggs</a> (1996) algorithms and subsequent
+work, for example, <a class="reference external" href="http://dx.doi.org/10.1109/TPAMI.2007.1132">Oliensis &amp; Hartley</a>&#8216;s (2008) recent CIESTA
+algorithm.</li>
+<li>Bundle adjustment of the output of the factorization step. This
+also a relatively well understood problem, as described in Chapter
+18 of <a class="reference external" href="http://www.robots.ox.ac.uk/~vgg/hzbook/hzbook1.html">Hartley &amp; Zisserman</a>.</li>
+</ol>
+<p>Straw and Dickinson will provide test data sets for the pinpoint
+project to gauge progress towards these goals.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Pinpoint</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pinpoint_distortion_gui.html"
+                        title="next chapter">pinpoint_distortion_gui program</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/goals.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="pinpoint_distortion_gui.html" title="pinpoint_distortion_gui program"
+             >next</a></li>
+        <li class="right" >
+          <a href="index.html" title="Pinpoint"
+             >previous</a> |</li>
+        <li><a href="index.html">pinpoint v0.0.4+git documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2007-2010, Pinpoint Developers.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.2.
+    </div>
+  </body>
+</html>

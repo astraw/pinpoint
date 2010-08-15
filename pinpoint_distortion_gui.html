@@ -1,0 +1,168 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pinpoint_distortion_gui program &mdash; pinpoint v0.0.4+git documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.4+git',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pinpoint v0.0.4+git documentation" href="index.html" />
+    <link rel="prev" title="Goals of the pinpoint project" href="goals.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="goals.html" title="Goals of the pinpoint project"
+             accesskey="P">previous</a></li>
+        <li><a href="index.html">pinpoint v0.0.4+git documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pinpoint-distortion-gui-program">
+<h1>pinpoint_distortion_gui program<a class="headerlink" href="#pinpoint-distortion-gui-program" title="Permalink to this headline">¶</a></h1>
+<p>This program allows one to estimate the depth-independent non-linear
+distortion created by many camera lenses. Fundamentally, this is a GUI
+program for an implementation of the <a class="reference external" href="http://dx.doi.org/10.1006/gmip.1996.0407">Line-Based Correction of Radial
+Lens Distortion</a> (GMIP 1997) algorithm by Prescott and McLean.</p>
+<div class="section" id="using-the-program-a-walk-through">
+<h2>Using the program - a walk-through<a class="headerlink" href="#using-the-program-a-walk-through" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="step-1-opening-an-image">
+<h3>Step 1 - opening an image<a class="headerlink" href="#step-1-opening-an-image" title="Permalink to this headline">¶</a></h3>
+<p>From the command line, start the program with an image file from your
+camera:</p>
+<div class="highlight-python"><pre>pinpoint_distortion_gui my_image_file.jpg</pre>
+</div>
+<p>This should open a window that looks something like this:</p>
+<img alt="pinpoint_distortion_gui application just after opening" src="_images/just_open.png" style="width: 702px; height: 432px;" />
+<p>(If you don&#8217;t see the images, click the little triangle next to the
+file name to show them.)</p>
+</div>
+<div class="section" id="step-2-mark-lines">
+<h3>Step 2 - mark lines<a class="headerlink" href="#step-2-mark-lines" title="Permalink to this headline">¶</a></h3>
+<p>There use the following keys to tell the program about lines in your
+images: (You may have to click once on the image before it will
+register your keystrokes.)</p>
+<blockquote>
+<ul class="simple">
+<li>&#8220;p&#8221; will add a point to the current line</li>
+<li>&#8220;n&#8221; will create a new line</li>
+<li>&#8220;c&#8221; will clear all your lines.</li>
+</ul>
+</blockquote>
+<p>As you add points and lines, these will be drawn on the image. They
+will also be printed to the console.</p>
+<p>Because the edges of your image contain the most distortion, it is
+most robust to create lines near the edges. A set of lines ready for
+distortion estimation looks like this:</p>
+<img alt="pinpoint_distortion_gui application ready for distortion estimation" src="_images/ready_for_distortion_estimation.png" style="width: 702px; height: 432px;" />
+<p>Note that you do not need to take images of checkerboards for this to
+work, nor do you need to click on the checkerboard corners. These are
+simply convenient objects to photograph, because all the contrast in
+them should be straight lines.</p>
+</div>
+<div class="section" id="step-3-estimate-distortion">
+<h3>Step 3 - estimate distortion<a class="headerlink" href="#step-3-estimate-distortion" title="Permalink to this headline">¶</a></h3>
+<p>When you have a few lines marked in your image, and you are ready to
+estimate the distortion, click the &#8220;Automatically estimate distortion&#8221;
+button. Your computer should be busy calculating for several seconds
+(or longer), and then will hopefully have created a very accurate
+model of the distortions of your lens. This should be immediately
+apparent because the &#8220;undistorted image&#8221; window should contain an
+image without distortion, like this:</p>
+<img alt="pinpoint_distortion_gui application with undistorted image" src="_images/no_distortion.png" style="width: 702px; height: 432px;" />
+</div>
+<div class="section" id="step-4-save-the-distortion-parameters">
+<h3>Step 4 - save the distortion parameters<a class="headerlink" href="#step-4-save-the-distortion-parameters" title="Permalink to this headline">¶</a></h3>
+<p>Finally, save the distortion parameters to a .rad file. Click the
+&#8220;Nonlinear distortion model&#8221; button to view the model parameters
+window, and then click &#8220;Save .rad file&#8221; to open a file save dialog.</p>
+<img alt="pinpoint_distortion_gui saving the distortion model" src="_images/save_model.png" style="width: 903px; height: 462px;" />
+<p>The saved .rad files are compatible with <a class="reference external" href="http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html">Bouget&#8217;s camera toolbox</a>
+and <a class="reference external" href="http://cmp.felk.cvut.cz/~svoboda/SelfCal/">Svoboda&#8217;s Multi-Camera Self Calibration Toolbox</a>.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">pinpoint_distortion_gui program</a><ul>
+<li><a class="reference internal" href="#using-the-program-a-walk-through">Using the program - a walk-through</a><ul>
+<li><a class="reference internal" href="#step-1-opening-an-image">Step 1 - opening an image</a></li>
+<li><a class="reference internal" href="#step-2-mark-lines">Step 2 - mark lines</a></li>
+<li><a class="reference internal" href="#step-3-estimate-distortion">Step 3 - estimate distortion</a></li>
+<li><a class="reference internal" href="#step-4-save-the-distortion-parameters">Step 4 - save the distortion parameters</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="goals.html"
+                        title="previous chapter">Goals of the pinpoint project</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pinpoint_distortion_gui.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="goals.html" title="Goals of the pinpoint project"
+             >previous</a></li>
+        <li><a href="index.html">pinpoint v0.0.4+git documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2007-2010, Pinpoint Developers.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.2.
+    </div>
+  </body>
+</html>
