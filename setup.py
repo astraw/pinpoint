@@ -8,7 +8,7 @@ ext_modules.append(Extension(name='pinpoint._caltech_distortion',
                              sources=['src/_caltech_distortion.c']))
 
 setup(name='pinpoint',
-      version='0.0.2',
+      version='0.0.2+git',
       author='pinpoint developers',
       author_email='pinpoint-team@lists.launchpad.net',
       license='BSD',
