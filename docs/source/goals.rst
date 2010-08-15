@@ -1,11 +1,11 @@
-.. This document is in reStructuredText format.
+Goals of the pinpoint project
+=============================
 
-This is a document stating the goals for the `pinpoint
-project`_. Currently, this document and the project are in a very
-early and unfinished form, and everything should be regarded as a
-pre-alpha sketch. Please join the fun if you're so inclined.
-
-.. _pinpoint project: https://edge.launchpad.net/pinpoint
+This is a document stating the goals for the `pinpoint project
+<http://github.com/astraw/pinpoint>`_. Currently, this document and
+the project are in a very early and unfinished form, and everything
+should be regarded as a pre-alpha sketch. Please join the fun if
+you're so inclined.
 
 Ultimately, we would like pinpoint to be an open-source Python library
 suitable for multi-camera calibration used in 3D machine vision
