@@ -1,7 +1,7 @@
 #!/bin/bash -x
 set -e
 
-git diff --quiet && { echo "aborting - repo not clean. try git status"; exit 1; }
+git diff --quiet || { echo "aborting - repo not clean. try git status"; exit 1; }
 
 rm -rf /tmp/gh-pages
 python setup.py build_sphinx
