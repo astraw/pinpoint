@@ -22,6 +22,27 @@ import wx
 from distortion import NonlinearDistortionModel, CaltechNonlinearDistortionModel
 import distortion_estimate
 
+def draw_lines_on_ax(ax,lines,func=None,display_transform=None):
+    ax.lines=[] # remove old line(s) that may already be plotted
+
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+    for line in lines:
+        if not len(line):
+            continue
+        tmp = np.array( line )
+        x = tmp[:,0]
+        y = tmp[:,1]
+        if func is not None:
+            ux,uy = func(x,y)
+        else:
+            ux,uy = x,y
+        if display_transform in ['rotate 90','rotate 270']:
+            ux,uy=uy,ux
+        ax.plot(ux,uy,'bx-')
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+
 class RightSidePanel(HasTraits):
     # right or bottom panel depending on direction of split
 #    add_image_file = Button()
@@ -125,11 +146,19 @@ class DisplayWorkThread(Thread):
                   aspect='equal',
                   cmap=cm.pink,
                   **kwargs)
+
+        if hasattr(self,'lines'):
+            if do_undistortion:
+                func = self.nonlinear_distortion_model.undistort
+            else:
+                func = None
+            draw_lines_on_ax(ax,self.lines,func=func,
+                             display_transform=self.display_transform)
+
         GUI.invoke_later(self.mplwidget.figure.canvas.draw)
 
 class DistortedImageWidget(Widget):
-    nonlinear_distortion_model = Instance(NonlinearDistortionModel)
-    param_holder = Instance(RightSidePanel)
+    parent_w_model = Instance(RightSidePanel)
     list_of_lines = traits.Trait([],list)
     # fixme: need to allow user to change the display_transform within
     # the GUI.
@@ -145,19 +174,25 @@ class DistortedImageWidget(Widget):
     current_line = traits.Trait([],list)
 
     def __init__(self, parent, distorted_image,
-                 nonlinear_distortion_model, **kwargs):
+                 parent_w_model, **kwargs):
         self.distorted_image = distorted_image
-        self.nonlinear_distortion_model = nonlinear_distortion_model
+        self.parent_w_model = parent_w_model
         super(DistortedImageWidget,self).__init__(**kwargs)
         self.control = self._create_control(parent)
-        self.nonlinear_distortion_model.on_trait_change(
-            self._show_undistorted_image)
+        self.parent_w_model.on_trait_change(
+            self._register_model, name='nonlinear_distortion_model')
+        self._register_model()
 
         self._show_distorted_image()
         self._show_undistorted_image()
 
         self.current_line = [] # create new line
         self.list_of_lines.append( self.current_line ) # keep it
+
+    def _register_model(self):
+        self.parent_w_model.nonlinear_distortion_model.on_trait_change(
+            self._show_undistorted_image)
+        self._show_undistorted_image()
 
     def _create_control(self, parent):
         """ Create the toolkit-specific control that represents the widget. """
@@ -210,43 +245,18 @@ class DistortedImageWidget(Widget):
     def _update_lines(self):
         ax = self.distorted_mplwidget.axes
         if 1:
-            xlim = ax.get_xlim()
-            ylim = ax.get_ylim()
-            ax.lines=[] # remove old line(s) that may already be plotted
+            draw_lines_on_ax(ax,self.list_of_lines,
+                             display_transform=self.display_transform)
 
-            # plot all lines
-            for line in self.list_of_lines:
-                if not len(line):
-                    continue
-                tmp = np.array( line )
-                x = tmp[:,0]
-                y = tmp[:,1]
-                if self.display_transform in ['rotate 90','rotate 270']:
-                    x,y=y,x
-                ax.plot(x,y,'bx-')
-            ax.set_xlim(xlim)
-            ax.set_ylim(ylim)
             self.distorted_mplwidget.figure.canvas.draw()
 
             if 1:
                 # draw undistorted version
                 ax = self.undistorted_mplwidget.axes
-                ax.lines=[] # remove old line(s) that may already be plotted
+                draw_lines_on_ax(ax,self.list_of_lines,
+                                 func=self.parent_w_model.nonlinear_distortion_model.undistort,
+                                 display_transform=self.display_transform)
 
-                xlim = ax.get_xlim()
-                ylim = ax.get_ylim()
-                for line in self.list_of_lines:
-                    if not len(line):
-                        continue
-                    tmp = np.array( line )
-                    x = tmp[:,0]
-                    y = tmp[:,1]
-                    ux,uy = self.nonlinear_distortion_model.undistort(x,y)
-                    if self.display_transform in ['rotate 90','rotate 270']:
-                        ux,uy=uy,ux
-                    ax.plot(ux,uy,'bx-')
-                ax.set_xlim(xlim)
-                ax.set_ylim(ylim)
                 self.undistorted_mplwidget.figure.canvas.draw()
 
     def on_mpl_key_press(self,event):
@@ -295,7 +305,7 @@ class DistortedImageWidget(Widget):
         self.undistortion_display_thread.lines = self.list_of_lines
         self.undistortion_display_thread.mplwidget = self.undistorted_mplwidget
         self.undistortion_display_thread.nonlinear_distortion_model = \
-                                         self.nonlinear_distortion_model
+                                         self.parent_w_model.nonlinear_distortion_model
         self.undistortion_display_thread.image_data = self.distorted_image
         self.undistortion_display_thread.start()
 
@@ -356,7 +366,7 @@ class MainWindow(SplitApplicationWindow):
         di = DistortedImageWidget(
             parent,
             distorted_image=image_data,
-            nonlinear_distortion_model=self.rspanel.nonlinear_distortion_model,
+            parent_w_model=self.rspanel,
             )
         self.rspanel.distorted_image_widgets.append(di)
         if FIX1:

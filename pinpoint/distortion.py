@@ -84,10 +84,8 @@ class CaltechNonlinearDistortionModel(NonlinearDistortionModel):
     fc2 = Float(1000.0, label="fc2", desc="focal length (y)")
     cc1 = Float(label="cc1", desc="distortion center (x)")
     cc2 = Float(label="cc2", desc="distortion center (y)")
-    k1 = Range(-3.0, 3.0, 0.0, mode='slider', set_enter=True,
-               label="k1", desc="1st radial disortion term (for r^2)")
-    k2 = Range(-3.0, 3.0, 0.0, mode='slider', set_enter=True,
-               label="k2", desc="2nd radial disortion term (for r^4)")
+    k1 = Float(label="k1", desc="1st radial disortion term (for r^2)")
+    k2 = Float(label="k2", desc="2nd radial disortion term (for r^4)")
     p1 = Float(0.0, label="p1", desc="1st tangential disortion term")
     p2 = Float(0.0, label="p2", desc="2nd tangential disortion term")
     alpha_c = Float(0.0, label="alpha_c", desc="pixel skew" )
