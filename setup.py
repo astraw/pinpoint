@@ -1,6 +1,5 @@
 from setuptools import setup
 from distutils.core import Extension
-from Cython.Distutils import build_ext
 
 ext_modules = []
 
@@ -16,7 +15,6 @@ setup(name='pinpoint',
       url='http://launchpad.net/pinpoint',
       packages = ['pinpoint'],
       ext_modules= ext_modules,
-      cmdclass = {'build_ext': build_ext},
       entry_points = {
     'gui_scripts': ['pinpoint_distortion_gui = pinpoint.distortion_gui:main',
                     ],
