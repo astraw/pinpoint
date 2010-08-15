@@ -1,12 +1,4 @@
-.. This document is in reStructuredText format.
-
 TODO: Add a real README file.
-
-Requirements
-------------
-
-Build-Depends: cython
-Depends: numpy, scipy, enthought-traits-ui, matplotlib
 
 Related projects
 ----------------
