@@ -8,6 +8,7 @@ ext_modules.append(Extension(name='pinpoint._caltech_distortion',
                              sources=['src/_caltech_distortion.c']))
 
 setup(name='pinpoint',
+      description='a Python library for N-view camera calibration',
       version='0.0.2+git',
       author='pinpoint developers',
       author_email='pinpoint-team@lists.launchpad.net',
